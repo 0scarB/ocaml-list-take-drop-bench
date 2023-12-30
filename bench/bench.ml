@@ -1,6 +1,7 @@
 module ListTakeDrop : sig
   val take : int -> 'a list -> 'a list
   val take_kit : int -> 'a list -> 'a list
+  val take_kit2 : int -> 'a list -> 'a list
   val take_con : int -> 'a list -> 'a list
   val take_base : int -> 'a list -> 'a list
   val drop_kit : int -> 'a list -> 'a list
@@ -33,6 +34,15 @@ struct
     in
     if n < 0 then invalid_arg "List.take";
     aux 0 [] l
+
+  let take_kit2 n l =
+    let[@tail_mod_cons] rec aux n l =
+      match n, l with
+      | 0, _ | _, [] -> []
+      | n, x::l -> x::aux (n - 1) l
+    in
+    if n < 0 then invalid_arg "List.take";  
+    aux n l
 
   (* Derivate of: https://github.com/c-cube/ocaml-containers/blob/60bb2c8c68e3fce3d77c0e521fd6a1861ce6701e/src/core/CCList.ml#L797-L804 *)
   let[@tail_mod_cons] rec take_con_nonneg n l =
@@ -161,6 +171,12 @@ let test
 
 let () = test 
   ~take:ListTakeDrop.take_kit 
+  ~drop:ListTakeDrop.drop_kit
+  ~take_while:ListTakeDrop.take_while_kit
+  ~drop_while:ListTakeDrop.drop_while_kit
+in
+let () = test 
+  ~take:ListTakeDrop.take_kit2
   ~drop:ListTakeDrop.drop_kit
   ~take_while:ListTakeDrop.take_while_kit
   ~drop_while:ListTakeDrop.drop_while_kit
@@ -312,6 +328,7 @@ let bench_take_reports =
     [
       ("take", "Containers", ListTakeDrop.take_con);
       ("take", "kit-ty-kate", ListTakeDrop.take_kit);
+      ("take", "kit-ty-kate 2.", ListTakeDrop.take_kit2);
       ("take", "take-custom-mod-cons", ListTakeDrop.take);
       ("take", "Base", ListTakeDrop.take_base);
     ]
